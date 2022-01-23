@@ -1,12 +1,14 @@
 from flask import Flask, render_template, Response, request
-from imutils.video.pivideostream import PiVideoStream
+from imutils.video import VideoStream
 import time
 import numpy as np
 import cv2
 
 app = Flask(__name__)
 
-piCam = PiVideoStream().start()
+webcam = VideoStream().start()
+webcam.stream.set(3, 320)
+webcam.stream.set(4, 240)
 time.sleep(2.0)
 
 @app.route('/')
@@ -25,7 +27,7 @@ def generateCameraFrame(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(generateCameraFrame(piCam), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generateCameraFrame(webcam), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=False)
