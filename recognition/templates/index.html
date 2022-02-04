@@ -2,9 +2,9 @@
 <html>
   <head>
     <title>FacePi</title> 
-    <link rel="stylesheet" type="text/css" href="facePi.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='facePi.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/jpg" href="maske.jpg">
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='maske.jpg') }}">
   <script async src='/cdn-cgi/bm/cv/669835187/api.js'></script></head>
   <body>
     <div class="cameraWindow">
@@ -22,12 +22,14 @@
       <button type="button" class="screenShotButton">&#128247;</button>
 
       
-      <button type="button" class="alarmButton">&#9888;</button>
+      <button onclick="openNewBackgroundTab()" type="button" class="alarmButton">&#9888;</button>
       
     </div>
-
-
-
-
-  <script type="text/javascript">(function(){window['__CF$cv$params']={r:'6d82a6f51b5b911e',m:'w.HfSiWkS7RkuNIPiaug5CoamyiuqYaI4q6rrxBgRog-1643964634-0-ARVfrABOYLyYjDUpioqjOxpca2hzI34WN3mSiUGoOeaI4orBT/gGmSNzvTPRFJin8dVg657WOCdEDCf4Kb40LsMtumIP/zhjC0NTvSsMtqomJqULKbxGnwou9RRq23HfNVFhWmza7XWXhzrRJcOm/fg36xg0UinoLE1orzjaR92eU5yybG0QU9UGjyy9FNtXHw==',s:[0x8f46900bcc,0x3680163e46],}})();</script></body>
+    <script>
+      function openNewBackgroundTab() {
+        window.open("http://berrypi:5000/alarm"); 
+        self.focus();
+        }
+    </script>
+  </body>
 </html>

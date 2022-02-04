@@ -156,9 +156,15 @@ app = Flask(__name__)
 @app.route('/')
 def loadHTML():
     return render_template('index.html')
-    
+
+
 def decodeData(imageBytes):
     return (b'--frame\r\n Content-Type: image/jpeg\r\n\r\n' + imageBytes + b'\r\n\r\n')
+
+@app.route('/alarm')
+def alarm():
+    print('alarm')
+    return 'Hello, World'
 
 
 @app.route('/video_feed')
