@@ -109,6 +109,7 @@ def myTest():
 		# grab the frame from the threaded video stream and resize it
 		# to have a maximum width of 400 pixels
 		frame = vs.read()
+		frame = cv2.flip(frame, 0)
 		frame = imutils.resize(frame, width=500)
 
 		# detect faces in the frame and determine if they are wearing a
