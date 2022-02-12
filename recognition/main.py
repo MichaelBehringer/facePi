@@ -13,6 +13,7 @@ import imutils
 import time
 import cv2
 import os
+import rainbowhat
 
 def detect_and_predict_mask(frame, faceNet, maskNet, args):
 	# grab the dimensions of the frame and then construct a blob
@@ -132,6 +133,7 @@ def myTest():
 			else:
 				label = "No Face Mask Detected"
 				color = (0, 0, 255)
+				rainbowhat.buzzer.midi_note(60, 1)
 			
 			# display the label and bounding box rectangle on the output
 			# frame
@@ -165,6 +167,7 @@ def decodeData(imageBytes):
 @app.route('/alarm')
 def alarm():
     print('alarm')
+    rainbowhat.buzzer.midi_note(60, 1)
     return 'Hello, World'
 
 
