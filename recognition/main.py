@@ -15,6 +15,10 @@ import cv2
 import os
 import rainbowhat
 
+save_img = None
+isAlarmActive = True
+isViedoFeedActive = True
+
 def detect_and_predict_mask(frame, faceNet, maskNet, args):
 	# grab the dimensions of the frame and then construct a blob
 	# from it
@@ -119,6 +123,8 @@ def myTest():
 
 		# loop over the detected face locations and their corresponding
 		# locations
+		withCounter = 0
+		withoutCounter = 0
 		for (box, pred) in zip(locs, preds):
 			# unpack the bounding box and predictions
 			(startX, startY, endX, endY) = box
@@ -129,11 +135,15 @@ def myTest():
 			if mask > withoutMask:
 				label = "Thank You. Mask On."
 				color = (0, 255, 0)
+				withCounter+=1
 
 			else:
 				label = "No Face Mask Detected"
 				color = (0, 0, 255)
-				rainbowhat.buzzer.midi_note(60, 1)
+				global isAlarmActive
+				withoutCounter+=1
+				if(isAlarmActive and isViedoFeedActive):
+					rainbowhat.buzzer.midi_note(60, 1)
 			
 			# display the label and bounding box rectangle on the output
 			# frame
@@ -142,8 +152,18 @@ def myTest():
 			cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
 		# show the output frame
+		#global RGB_img
 		RGB_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+		if(not isViedoFeedActive):
+			RGB_img = cv2.imread('./static/logo.jpeg', 0)
+			rainbowhat.display.print_str('----')
+		else:
+			rainbowhat.display.print_str('0'+str(withCounter)+'0'+str(withoutCounter))
+		global save_img
+		save_img = RGB_img
 		retValue, image = cv2.imencode('.jpg', RGB_img)
+		
+		rainbowhat.display.show()
 		yield(decodeData(image.tobytes()))
 		key = cv2.waitKey(1) & 0xFF
 
@@ -166,10 +186,27 @@ def decodeData(imageBytes):
 
 @app.route('/alarm')
 def alarm():
-    print('alarm')
-    rainbowhat.buzzer.midi_note(60, 1)
-    return 'Hello, World'
+    global isAlarmActive
+    isAlarmActive = not isAlarmActive
+    return 'alarm'
 
+@app.route('/picture')
+def picture():
+    global save_img
+    cv2.imwrite('hallo.jpg', save_img)
+    return 'picture'
+
+@app.route('/activateViedoFeed')
+def activateViedoFeed():
+    global isViedoFeedActive
+    isViedoFeedActive = True
+    return 'activateViedoFeed'
+
+@app.route('/disableViedoFeed')
+def disableViedoFeed():
+    global isViedoFeedActive
+    isViedoFeedActive = False
+    return 'disableViedoFeed'
 
 @app.route('/video_feed')
 def video_feed():

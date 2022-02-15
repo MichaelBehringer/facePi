@@ -17,19 +17,19 @@
     </div>
 
     <div class="navbar">
-      <button type="button" class="stopButton">&#x2715;</button>
-      <button type="button" class="playButton">&#10148;</button>
-      <button type="button" class="screenShotButton">&#128247;</button>
+      <button onclick="callFlask('disableViedoFeed')" type="button" class="stopButton">&#x2715;</button>
+      <button onclick="callFlask('activateViedoFeed')" type="button" class="playButton">&#10148;</button>
+      <button onclick="callFlask('picture')" type="button" class="screenShotButton">&#128247;</button>
 
       
-      <button onclick="openNewBackgroundTab()" type="button" class="alarmButton">&#9888;</button>
+      <button onclick="callFlask('alarm')" type="button" class="alarmButton">&#9888;</button>
       
     </div>
     <script>
-      function openNewBackgroundTab() {
-        window.open("http://berrypi:5000/alarm"); 
-        self.focus();
-        }
+	
+	const callFlask = async (path) => {
+		await fetch('http://berrypi:5000/'+path);
+	}
     </script>
   </body>
 </html>
