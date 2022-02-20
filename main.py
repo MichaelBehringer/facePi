@@ -21,7 +21,7 @@ SCREENSHOT_EXPORT_PATH = "screenshots/"
 app = Flask(__name__)
 save_img = None
 isAlarmActive = True
-isViedoFeedActive = True
+isVideoFeedActive = True
 
 print("DEBUG: loading face detector model") #laden des face detector models
 faceNet = cv2.dnn.readNet(PROTOTXT_FILE_PATH, CAFFEMODEL_FILE_PATH)
@@ -29,18 +29,18 @@ faceNet = cv2.dnn.readNet(PROTOTXT_FILE_PATH, CAFFEMODEL_FILE_PATH)
 print("DEBUG: loading face mask detector model") #laden des mask detector models
 maskNet = load_model(MODEL_FILE_PATH)
 
-print("DEBUG: activating Camera") #kamera am Port 0 aktivieren (PiCam)
+print("DEBUG: activating Camera") #Kamera am Port 0 aktivieren (PiCam)
 videoStream = VideoStream(src=0).start()
 
-def mainVideoFeedLoop(): #main loop, wird ausgeführt wenn webiste aufgerufen wird
-	global isViedoFeedActive #laden der globalen variablen
+def mainVideoFeedLoop(): #main loop, wird ausgeführt wenn Website aufgerufen wird
+	global isVideoFeedActive #Laden der globalen Variablen
 	global save_img
 	global isAlarmActive
 	while True:
 		frame = videoStream.read() #lesen des Kamerabildes, spiegeln (PiCam kopfüber montiert), Bildgröße verkleinern
 		frame = cv2.flip(frame, 0)
 		frame = imutils.resize(frame, width=500)
-		(boxes, predictions) = detect_mask(frame, faceNet, maskNet) #aufruf unserer maskenerkennungsfunktion
+		(boxes, predictions) = detect_mask(frame, faceNet, maskNet) #Aufruf unserer Maskenerkennungsfunktion
 
 		withCounter = 0
 		withoutCounter = 0
@@ -48,7 +48,7 @@ def mainVideoFeedLoop(): #main loop, wird ausgeführt wenn webiste aufgerufen wi
 			(startX, startY, endX, endY) = box #Koordinaten extrahieren
 			(mask, withoutMask) = prediction
 
-			if mask > withoutMask: #entscheidung mit oder ohne Maske
+			if mask > withoutMask: #Entscheidung mit oder ohne Maske
 				label = "Thank You. Mask On."
 				color = (0, 255, 0)
 				withCounter+=1
@@ -57,7 +57,7 @@ def mainVideoFeedLoop(): #main loop, wird ausgeführt wenn webiste aufgerufen wi
 				label = "No Face Mask Detected"
 				color = (0, 0, 255)
 				withoutCounter+=1
-				if(isAlarmActive and isViedoFeedActive):
+				if(isAlarmActive and isVideoFeedActive):
 					rainbowhat.buzzer.midi_note(60, 1) #beep
 
 			cv2.putText(frame, label, (startX-50, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2) #Box um Gesicht malen und Text dazuschreiben
@@ -65,7 +65,7 @@ def mainVideoFeedLoop(): #main loop, wird ausgeführt wenn webiste aufgerufen wi
 
 		RGB_IMG = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #Kamerabild in RGB-Bild umwandeln
 
-		if(not isViedoFeedActive):
+		if(not isVideoFeedActive):
 			RGB_IMG = cv2.imread('./static/logo.jpeg') #Kamerabild mit Logo ersetzen
 			rainbowhat.display.print_str('----')
 		else:
@@ -82,23 +82,23 @@ def detect_mask(frame, faceNet, maskNet):
 	boxes = []
 	predictions = []
 
-	(height, width) = frame.shape[:2] #länge breite von Bild ermitteln
+	(height, width) = frame.shape[:2] #Länge, Breite von Bild ermitteln
 	blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0)) #blob aus Bild generieren (Binary Large Objects)
 
 	faceNet.setInput(blob)
-	detections = faceNet.forward() #blob an das netzt schicken um Gesichter zu erkennen
+	detections = faceNet.forward() #blob an das Netz schicken um Gesichter zu erkennen
 
 	for i in range(0, detections.shape[2]):
-		confidence = detections[0, 0, i, 2] #Prozentangebe wie sicher sich das Neurale Netzt ist eine Maske erkannt zu haben
+		confidence = detections[0, 0, i, 2] #Prozentangebe wie sicher sich das neurale Netz ist eine Maske erkannt zu haben
 
-		if confidence > 0.5: #nur anzeigen wenn zuversicht > 50%
-			box = detections[0, 0, i, 3:7] * np.array([width, height, width, height]) #berechnung der Koordinaten für die Box um das Gesicht
+		if confidence > 0.5: #nur anzeigen wenn Zuversicht > 50%
+			box = detections[0, 0, i, 3:7] * np.array([width, height, width, height]) #Berechnung der Koordinaten für die Box um das Gesicht
 			(startX, startY, endX, endY) = box.astype("int")
 
 			(startX, startY) = (max(0, startX), max(0, startY)) #sicherstellen dass Box auf das Bild passt
 			(endX, endY) = (min(width - 1, endX), min(height - 1, endY))
 
-			face = frame[startY:endY, startX:endX] #erkanntes gesicht für die Maskenerkennung vorbereiten
+			face = frame[startY:endY, startX:endX] #erkanntes Gesicht für die Maskenerkennung vorbereiten
 			face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
 			face = cv2.resize(face, (224, 224))
 			face = img_to_array(face)
@@ -107,17 +107,17 @@ def detect_mask(frame, faceNet, maskNet):
 			faces.append(face)
 			boxes.append((startX, startY, endX, endY))
 
-	if len(faces) > 0: #wenn mindestesns 1 Gesicht gefunden wurde
+	if len(faces) > 0: #wenn mindestesns ein Gesicht gefunden wurde
 		faces = np.array(faces, dtype="float32")
 		predictions = maskNet.predict(faces, batch_size=32) #(　’ ‘)ﾉﾉ⌒●~* magic
 
 	return (boxes, predictions)
 
-@app.route('/') #default route
+@app.route('/') #default Route
 def loadHTML():
 	return render_template('index.html')
 
-def decodeData(imageBytes): #bilder für Übertrag dekodieren
+def decodeData(imageBytes): #Bilder für Übertrag dekodieren
 	return (b'--frame\r\n Content-Type: image/jpeg\r\n\r\n' + imageBytes + b'\r\n\r\n')
 
 @app.route('/alarm')
@@ -129,25 +129,25 @@ def alarm():
 @app.route('/picture')
 def picture():
 	global save_img
-	timestr = time.strftime("%Y%m%d_%H%M%S") #Zeit+Datum
+	timestr = time.strftime("%Y%m%d_%H%M%S") #Zeit + Datum
 	cv2.imwrite(SCREENSHOT_EXPORT_PATH + timestr + '_screenshot.jpg', save_img)
 	return 'picture'
 
-@app.route('/activateViedoFeed')
-def activateViedoFeed():
-	global isViedoFeedActive
-	isViedoFeedActive = True
-	return 'activateViedoFeed'
+@app.route('/activateViedeoFeed')
+def activateViedeoFeed():
+	global isVideoFeedActive
+	isVideoFeedActive = True
+	return 'activateVideoFeed'
 
-@app.route('/disableViedoFeed')
-def disableViedoFeed():
-	global isViedoFeedActive
-	isViedoFeedActive = False
-	return 'disableViedoFeed'
+@app.route('/disableVideoFeed')
+def disableVideoFeed():
+	global isVideoFeedActive
+	isVideoFeedActive = False
+	return 'disableVideoFeed'
 
 @app.route('/video_feed')
 def video_feed():
-	return Response(mainVideoFeedLoop(), mimetype='multipart/x-mixed-replace; boundary=frame') #http-header für dynamische webiste updates
+	return Response(mainVideoFeedLoop(), mimetype='multipart/x-mixed-replace; boundary=frame') #http-header für dynamische Websiteupdates
 
-if __name__ == '__main__': #starten des flask servers
+if __name__ == '__main__': #starten des Flaskservers
 	app.run(host='0.0.0.0', debug=False)
